@@ -680,7 +680,27 @@ namespace BogheCore.Services.Impl
             /// <returns></returns>
             public override int OnOptionsEvent(OptionsEvent e)
             {
+                tsip_options_event_type_t type = e.getType();
+                OptionsSession ptSession = e.getSession();
 
+                switch (type)
+                {
+                    case tsip_options_event_type_t.tsip_i_options:
+                        if (ptSession == null) // New session
+                        {
+                            if ((ptSession = e.takeSessionOwnership()) != null)
+                            {
+                                ActionConfig config = new ActionConfig();
+                                config.addHeader("Allow", "PRACK, INVITE, ACK, BYE, CANCEL, UPDATE, SUBSCRIBE, NOTIFY, REFER, MESSAGE, OPTIONS");
+                                ptSession.accept(config);
+                                ptSession.Dispose();
+                                config.Dispose();
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
                 return 0;
             }
         }
